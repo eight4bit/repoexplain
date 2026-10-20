@@ -20,3 +20,13 @@ venv/
 Thumbs.db
 .idea/
 .vscode/
+.venv/
+.DS_Store
+.venv/
+.DS_Store
+__pycache__/
+*.pyc
+.venv/
+.DS_Store
+__pycache__/
+*.pyc

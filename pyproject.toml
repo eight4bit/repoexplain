@@ -6,6 +6,7 @@ build-backend = "setuptools.build_meta"
 name = "repoexplain"
 version = "0.2.0"
 description = "Explain a code repository (what it does, where things are, which dependencies and technologies it uses) with local LLMs. No accounts, no cloud."
+authors = [{ name = "eight4bit", email = "345674262+eight4bit@users.noreply.github.com" }]
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
@@ -17,6 +18,9 @@ dependencies = [
     "pathspec>=0.11",
     "tomli>=2.0; python_version < '3.11'",
 ]
+[project.urls]
+Homepage = "https://github.com/eight4bit/repoexplain"
+Source = "https://github.com/eight4bit/repoexplain"
 
 [project.optional-dependencies]
 dev = ["pytest>=7"]

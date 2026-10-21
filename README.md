@@ -42,7 +42,7 @@ Use `--trace` to see the route and tools used, and `--route overview|deps|locate
 ## Install
 
 ```bash
-git clone <your-repo-url> repoexplain && cd repoexplain
+git clone https://github.com/eight4bit/repoexplain.git && cd repoexplain
 python3 -m venv .venv
 source .venv/bin/activate          # Windows (PowerShell): .venv\Scripts\Activate.ps1
 pip install -e .                   # -e lets you edit the code and see changes immediately

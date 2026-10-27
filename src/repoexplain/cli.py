@@ -5,6 +5,7 @@ import argparse
 import sys
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+from .server import ensure_server
 
 from . import __version__
 from .agent import Agent, Turn, source_label
@@ -99,6 +100,7 @@ def cmd_index(args: argparse.Namespace) -> int:
         print(f"Not a folder: {root}", file=sys.stderr)
         return 2
     cfg = _config_for(args, root)
+    _start_server(cfg, args)
     embedder = make_provider(cfg["embeddings"])
     summarize = bool(args.summarize or cfg["summarizer"]["enabled"])
     summarizer = make_provider(cfg["summarizer"]) if summarize else None
@@ -118,6 +120,7 @@ def cmd_ask(args: argparse.Namespace) -> int:
     agent = _make_agent(root, cfg)
     if agent is None:
         return 2
+    _start_server(cfg, args)
     _ask(agent, args.question, [], args)
     return 0
 
@@ -128,7 +131,8 @@ def cmd_chat(args: argparse.Namespace) -> int:
     agent = _make_agent(root, cfg)
     if agent is None:
         return 2
-    history: List[Turn] = []
+    _start_server(cfg, args)
+    history: list[Turn] = []
     print(f"Chatting about {root.name}. Follow-up questions are remembered. Type 'exit' to quit.")
     while True:
         try:
@@ -178,6 +182,15 @@ def cmd_config(args: argparse.Namespace) -> int:
     print(dump_defaults())
     return 0
 
+def _add_autostart_flag(p: argparse.ArgumentParser) -> None:
+    p.add_argument("--no-autostart", action="store_true",
+                   help="do not start the model server automatically")
+
+
+def _start_server(cfg: Dict[str, Any], args: argparse.Namespace) -> None:
+    ensure_server(cfg, no_autostart=getattr(args, "no_autostart", False),
+                  echo=lambda msg: print(msg, file=sys.stderr))
+
 
 def _add_answer_flags(p: argparse.ArgumentParser) -> None:
     p.add_argument("--show-context", action="store_true", help="print the evidence given to the model")
@@ -200,6 +213,7 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--rebuild", action="store_true", help="ignore the existing index and start over")
     p.add_argument("--summarize", action="store_true",
                    help="also write one-line file summaries with the small model (slower, better overviews)")
+    _add_autostart_flag(p)
     p.set_defaults(func=cmd_index)
 
     p = sub.add_parser("ask", help="ask one question about an indexed repository")
@@ -207,23 +221,28 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--repo", default=".", help="repository folder (default: current folder)")
     p.add_argument("--top-k", type=int, help="number of code chunks to retrieve")
     _add_answer_flags(p)
+    _add_autostart_flag(p)
     p.set_defaults(func=cmd_ask)
 
     p = sub.add_parser("chat", help="interactive question loop with memory of recent turns")
     p.add_argument("--repo", default=".")
     _add_answer_flags(p)
+    _add_autostart_flag(p)
     p.set_defaults(func=cmd_chat)
 
     p = sub.add_parser("overview", help="print the project overview (no LLM needed)")
     p.add_argument("--repo", default=".")
+    _add_autostart_flag(p)
     p.set_defaults(func=cmd_overview)
 
     p = sub.add_parser("deps", help="print dependencies, languages and technologies (no LLM needed)")
     p.add_argument("--repo", default=".")
+    _add_autostart_flag(p)
     p.set_defaults(func=cmd_deps)
 
     p = sub.add_parser("doctor", help="check Python, RAM and model backends")
     p.add_argument("--repo", default=".")
+    _add_autostart_flag(p)
     p.set_defaults(func=cmd_doctor)
 
     p = sub.add_parser("config", help="show the default config, or write one with --init")

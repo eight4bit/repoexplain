@@ -64,7 +64,16 @@ DEFAULTS: Dict[str, Any] = {
         # Unload the embedding model before generating, so only one model is in RAM.
         "unload_embedder": True,
     },
+    "server": {
+        # Start a local OpenAI-compatible server (e.g. llama.cpp) when none is running.
+        # Only used for localhost URLs. Leave command empty to disable.
+        "autostart": True,
+        "command": "",
+        "stop_on_exit": False,
+        "startup_timeout": 60,
+    },
 }
+
 
 
 class ConfigError(RuntimeError):

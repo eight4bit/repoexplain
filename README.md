@@ -1,4 +1,4 @@
-# RepoExplain
+# repoexplain
 
 Understand an unfamiliar code repository with **local** language models: what it does, where things
 are implemented, what each piece means, and which dependencies and technologies it uses.
@@ -92,7 +92,7 @@ server: `llama-server --help` should list `--models-preset`.
    The preset syntax is new and may change between llama.cpp versions, so check its documentation if
    the server rejects the file.
 
-2. Point RepoExplain at it. Put this in your user config file (see [Configuration](#configuration)), or in
+2. Point repoexplain at it. Put this in your user config file (see [Configuration](#configuration)), or in
    `repoexplain.yaml` (create one with `repoexplain config --init`):
 
    ```yaml
@@ -115,7 +115,7 @@ server: `llama-server --help` should list `--models-preset`.
    The model names are the section names from `models.ini`. Context size is set by `c = 4096` in that file;
    the `num_ctx` setting only applies to Ollama.
 
-3. Run `repoexplain index .` and `repoexplain ask "..."`. With `server.command` set, RepoExplain starts
+3. Run `repoexplain index .` and `repoexplain ask "..."`. With `server.command` set, repoexplain starts
    the server for you (see below). Without it, start the server yourself first:
 
    ```bash
@@ -127,7 +127,7 @@ server: `llama-server --help` should list `--models-preset`.
 
 ### Automatic server start
 
-When a local OpenAI-compatible server is configured and nothing is answering, RepoExplain can launch it
+When a local OpenAI-compatible server is configured and nothing is answering, repoexplain can launch it
 for you, so `index`, `ask` and `chat` work without a separate step (like Ollama's background service).
 
 It starts a server only when **all** of these are true:
@@ -150,7 +150,7 @@ server:
 To turn it off: set `server.autostart: false`, pass `--no-autostart` for one run, or set the environment
 variable `REPOEXPLAIN_NO_AUTOSTART=1`.
 
-To stop a server that RepoExplain started, run `repoexplain stop`. It only stops servers that RepoExplain
+To stop a server that repoexplain started, run `repoexplain stop`. It only stops servers that repoexplain
 launched itself and leaves any server you started yourself alone. Use it when you are done to free the
 models' RAM.
 
@@ -164,7 +164,7 @@ repoexplain chat --repo path/to/repo         # interactive, remembers the last f
 repoexplain overview --repo path/to/repo     # print the project overview (no LLM needed)
 repoexplain deps --repo path/to/repo         # dependencies, languages, technologies (no LLM needed)
 repoexplain doctor                           # check Python, RAM and models
-repoexplain stop                             # stop the model server that RepoExplain started
+repoexplain stop                             # stop the model server that repoexplain started
 repoexplain config --init                    # write repoexplain.yaml to customise everything
 ```
 

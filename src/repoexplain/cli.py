@@ -169,6 +169,11 @@ def cmd_deps(args: argparse.Namespace) -> int:
 def cmd_doctor(args: argparse.Namespace) -> int:
     return run_doctor(_config_for(args, Path(args.repo).resolve()))
 
+def cmd_stop(args: argparse.Namespace) -> int:
+    from .server import stop_started_server
+    stop_started_server(echo=lambda msg: print(msg))
+    return 0
+
 
 def cmd_config(args: argparse.Namespace) -> int:
     if args.init:
@@ -244,6 +249,9 @@ def build_parser() -> argparse.ArgumentParser:
     p.add_argument("--repo", default=".")
     _add_autostart_flag(p)
     p.set_defaults(func=cmd_doctor)
+
+    p = sub.add_parser("stop", help="stop the model server that repoexplain started")
+    p.set_defaults(func=cmd_stop)
 
     p = sub.add_parser("config", help="show the default config, or write one with --init")
     p.add_argument("--init", action="store_true", help="write repoexplain.yaml in the current folder")

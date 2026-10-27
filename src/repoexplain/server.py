@@ -16,6 +16,7 @@ import atexit
 import os
 import shlex
 import shutil
+import signal
 import subprocess
 import tempfile
 import time
@@ -33,6 +34,10 @@ _started: Optional[subprocess.Popen] = None
 
 def log_path() -> Path:
     return Path(tempfile.gettempdir()) / "repoexplain-server.log"
+
+
+def pid_path() -> Path:
+    return Path(tempfile.gettempdir()) / "repoexplain-server.pid"
 
 
 def disabled_by_env() -> bool:
@@ -99,6 +104,7 @@ def ensure_server(cfg: Dict[str, Any], no_autostart: bool = False,
         proc = subprocess.Popen(args, stdin=subprocess.DEVNULL, stdout=log,
                                 stderr=subprocess.STDOUT, **kwargs)
     _started = proc
+    pid_path().write_text(f"{proc.pid}\n{args[0]}", encoding="utf-8")
     if srv.get("stop_on_exit"):
         atexit.register(stop_server)
 
@@ -121,10 +127,49 @@ def stop_server() -> None:
     """Stop the server, but only if this process started it."""
     global _started
     proc, _started = _started, None
-    if proc is None or proc.poll() is not None:
+    if proc is None:
+        return
+    pid_path().unlink(missing_ok=True)
+    if proc.poll() is not None:
         return
     proc.terminate()
     try:
         proc.wait(timeout=5)
     except subprocess.TimeoutExpired:
         proc.kill()
+
+
+def _pid_matches(pid: int, exe: str) -> bool:
+    """True if process `pid` looks like the program we started (guards against reused pids)."""
+    name = Path(exe).name.lower()
+    try:
+        if os.name == "nt":
+            cmd = ["tasklist", "/FI", f"PID eq {pid}"]
+        else:
+            cmd = ["ps", "-p", str(pid), "-o", "command="]
+        out = subprocess.run(cmd, capture_output=True, text=True, timeout=10).stdout
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return name in out.lower()
+
+
+def stop_started_server(echo: Callable[[str], None] = print) -> bool:
+    """Stop a server that an earlier `repoexplain` run started (found via its pid file)."""
+    try:
+        lines = pid_path().read_text(encoding="utf-8").splitlines()
+        pid, exe = int(lines[0]), lines[1]
+    except (OSError, ValueError, IndexError):
+        echo("No server started by repoexplain was found. (If you started one yourself, stop it yourself.)")
+        return False
+    if not _pid_matches(pid, exe):
+        pid_path().unlink(missing_ok=True)
+        echo("The server that repoexplain started is no longer running.")
+        return False
+    try:
+        os.kill(pid, signal.SIGTERM)
+    except OSError as exc:
+        echo(f"Could not stop the server (process {pid}): {exc}")
+        return False
+    pid_path().unlink(missing_ok=True)
+    echo("Model server stopped.")
+    return True

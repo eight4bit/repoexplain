@@ -150,6 +150,10 @@ server:
 To turn it off: set `server.autostart: false`, pass `--no-autostart` for one run, or set the environment
 variable `REPOEXPLAIN_NO_AUTOSTART=1`.
 
+To stop a server that RepoExplain started, run `repoexplain stop`. It only stops servers that RepoExplain
+launched itself and leaves any server you started yourself alone. Use it when you are done to free the
+models' RAM.
+
 ## Commands
 
 ```bash
@@ -160,6 +164,7 @@ repoexplain chat --repo path/to/repo         # interactive, remembers the last f
 repoexplain overview --repo path/to/repo     # print the project overview (no LLM needed)
 repoexplain deps --repo path/to/repo         # dependencies, languages, technologies (no LLM needed)
 repoexplain doctor                           # check Python, RAM and models
+repoexplain stop                             # stop the model server that RepoExplain started
 repoexplain config --init                    # write repoexplain.yaml to customise everything
 ```
 
